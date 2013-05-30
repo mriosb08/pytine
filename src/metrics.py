@@ -5,6 +5,13 @@ import subprocess
 from bsddb3 import db
 from rteTools import Lin
 class SetMetrics:
+    """Metrics based on sets, the text and hypo are transformed into sets
+    Input:
+        text: list of tokens
+        hypo: list of tokens
+        bleu_path: string path to bleu 
+        meteor_path: string path to meteor
+    """
     
     def __init__(self, text = [], hypo = [], bleu_path = './', meteor_path = '/media/raid-vapnik/tools/meteor-1.3'):
         self.text = set(text)
@@ -14,15 +21,23 @@ class SetMetrics:
         self.precision = 0
         self.recall = 0
         return
-    
+    #setters
     def set_text(self, text = []):
+        """Method stores the text as a set
+        Input:
+            text: list of tokens
+        """
         self.text = set(text)
         return
     
     def set_hypo(self, hypo = []):
+        """Method stores the hypo as a set
+        Input:
+            hypo: list of tokens
+        """
         self.hypo = set(hypo)
         return
-    
+    #getters
     def get_text(self):
         return self.text
     
@@ -36,6 +51,10 @@ class SetMetrics:
         return sep.join(self.hypo)
     
     def cosine(self):
+        """Computes cosine metric
+        Output:
+            cosine score
+        """
         isec = self.text & self.hypo
         try:
             result = float(len(isec)) / math.sqrt(len(self.text) * len(self.hypo))
@@ -44,6 +63,10 @@ class SetMetrics:
             return 0.0
     
     def dice(self):
+        """Computes dice metric
+        Output:
+            dice score
+        """
         isec = self.text & self.hypo
         try:
             result = (2 * float(len(isec))) / (len(self.text) + len(self.hypo))
@@ -52,6 +75,10 @@ class SetMetrics:
             return 0.0
     
     def jaccard(self):
+        """Computes jaccard metric
+        Output:
+            jaccard score
+        """
         isec = self.text & self.hypo
         union = self.text | self.hypo
         try:
@@ -61,6 +88,10 @@ class SetMetrics:
             return 0.0
     
     def overlap(self):
+        """Computes overlap metric
+        Output:
+            overlap score
+        """
         isec = self.text & self.hypo
         try:
             result = float(len(isec)) / min(len(self.text), len(self.hypo))
@@ -69,6 +100,10 @@ class SetMetrics:
             return 0.0
     
     def get_precision(self):
+        """Computes precision
+        Output:
+            precision score
+        """
         isec = self.text & self.hypo
         len_i = len(isec)
         try:
@@ -78,6 +113,10 @@ class SetMetrics:
             return 0.0
     
     def get_recall(self):
+        """Computes recall
+        Output:
+            recall score
+        """
         isec = self.text & self.hypo
         try:
             self.recall = float(len(isec)) / len(self.text)
@@ -86,16 +125,23 @@ class SetMetrics:
             return 0.0
     
     def get_f1(self):
+        """Computes F1
+        Output:
+            F1 score
+        """
         if self.precision + self.recall == 0:
             return 0
         result = 2 * ((self.precision * self.recall) / (self.precision + self.recall))
         return result
 
     def get_isec(self):
+        """Returns the size of the intersection between text and hypo
+        """
         isec = self.text & self.hypo
         return len(isec)
     
     def bleu(self):
+        """Calls bleu tool and runs it for the text and hypo"""
         try:
             f_text = open('tmp.text','w')
             f_hypo = open('tmp.hypo','w')
@@ -117,6 +163,7 @@ class SetMetrics:
         return float(score.strip())
 
     def meteor(self):
+        """Calls meteor tool and runs it for the text and hypo"""
         try:
             f_text = open('tmp.text','w')
             f_hypo = open('tmp.hypo','w')
@@ -141,6 +188,11 @@ class SetMetrics:
         return score
 
     def meteor_list(self, list_t = [], list_h = []):
+        """Call meteor tool and runs it over a list of text and hypo pairs
+        Input:
+            list_t: list of text parts, one string sentence per position
+            list_h: list of hypo parts, one string sentence per position
+        """
         ids = []
         try:
             f_text = open('tmp.text','w')
@@ -174,21 +226,31 @@ class SetMetrics:
 
 
 class VectorMetrics:
+    """Metrics based on vectors, the text and hypo are vectors of scores.
+    Input:
+        vector_a: list of scores or values for the text part
+        vector_b: list of scores or values for the text part
+    
+    """
 
     def __init__(self, vector_a = [], vector_b = []):
         self.vector_a = vector_a
         self.vector_b = vector_b
         return
-
+    #setters
     def set_vectors(self, vector_a = [], vector_b = []):
         self.vector_a = vector_a
         self.vector_b = vector_b
         return
-
+    #getters
     def get_vectors(self):
         return (self.vector_a, self_vector_b)
 
     def cosine(self):
+        """Computes the cosine between two vectors
+        Output:
+            cosine score
+        """
         self.result = 0.0
         if len(self.vector_a) != len(self.vector_b) or len(self.vector_a) == 0 or len(self.vector_b) == 0:
             return None
@@ -200,6 +262,14 @@ class VectorMetrics:
     
 
 class VerbMetrics:
+    """Similarity metrics between a pair of verbs fro the text hypo pair.
+    Input:
+        text_v: verb from the text
+        hypo_v: verb from the hypo
+        vn_file: file path for VerbNet db
+        vo_file: file path for VerbOcean db
+        direct_file: file path for direct db
+    """
     
     def __init__(self, text_v = '', hypo_v = '', vn_file = 'data/vn_classes.db', vo_file = 'data/verbocean.db', direct_file = 'data/DIRECT_verbs_1000.db', vn_strict = 0):
         self.text_v = text_v
@@ -219,7 +289,7 @@ class VerbMetrics:
                             ,'stronger-than'
                             ,'unk')
         return
-
+    #setters
     def set_text_verb(self, text_v = ''):
         self.text_v = text_v
         return
@@ -227,7 +297,7 @@ class VerbMetrics:
     def set_hypo_verb(self, hypo_v = ''):
         self.hypo_v = hypo_v
         return
-
+    #getters
     def get_text_verb(self):
         return self.text_v
 
@@ -235,6 +305,11 @@ class VerbMetrics:
         return self.hypo_v    
     
     def vn_isec(self):
+        """Checks if there is an intersection between VerbNet classes for the given pair of verbs
+        Output:
+            1: if the verbs share at least one class
+            0: ow        
+        """
         value_text = self.vn_DB.get(self.text_v)
         tmp_text = []
         if value_text:
@@ -266,6 +341,11 @@ class VerbMetrics:
             return 0
 
     def direct(self):
+        """ Checks if there is an entialment directional relation between the verbs (e.g. koala => animal, is true)
+        Output:
+            1: if the verbs hold an entialment directional relation
+            0: ow
+        """
         if self.text_v == self.hypo_v:
             return 1
         else:
@@ -292,6 +372,12 @@ class VerbMetrics:
 
 
 class NEMetrics:
+    """Metrics for Named Entities of the text and hypo
+    Input:
+        pairs_text: list of named entities from the text
+        pairs_hypo: list of named entities from the hypo
+        empty_tag: tag for non named entities default: 'O'
+    """
     def __init__(self, pairs_text = [], pairs_hypo =[], empty_tag = 'O'):
         self.pairs_text = pairs_text
         self.pairs_hypo = pairs_hypo
@@ -317,6 +403,11 @@ class NEMetrics:
         return self.pairs_hypo
 
     def get_score_lin(self):
+        """Computes named entity similarity with the help of the Lin thesaurus.
+        The entityes with the same type are measure for equality or similarity given the thesaurus.
+        Output:
+            Named entity score
+        """
         sum_ne  = 0
         for token_text, tag_text in self.pairs_text:
             for token_hypo, tag_hypo in self.pairs_hypo:
