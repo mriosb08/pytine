@@ -1,6 +1,6 @@
 import re
 import pickle
-from metrics import VerbMetrics, SetMetrics
+from metrics import VerbMetrics, SetMetrics,VectorMetrics
 from rteTools import WNTools, VerbTools, Lin, RTETools, NounTools
 class MLNModel(object):
     def __init__(self, v_predicates = [], a_predicates = []):
@@ -325,9 +325,13 @@ class ModelB(MLNModel):
                                 self.a_predicates.append(lin_arg)
 
                             for key, tree in hyps:
+                                t = 0
                                 for category in tree:
+                                    if t >= 3:
+                                        break
                                     hyp_arg = 'Token(%s, %s, "%s")'%(type, id, self.clean_str(category))
                                     self.a_predicates.append(hyp_arg)
+                                    t +=1
 
                         arg_id = 'ARG(%s, %s, %s)'%(type, i, id)
                         self.a_predicates.append(arg_id)
@@ -501,6 +505,58 @@ class ModelFULLW(ModelB):
 
         return self.baseline_predicates
 
+class ModelEMNLP(ModelB):
+    
+    def __init__(self,  v_predicates = [], a_predicates = [], baseline_predicates = []):
+        super(ModelEMNLP, self).__init__(v_predicates, a_predicates)
+        self.baseline_predicates = baseline_predicates
+        self.pairs = {}
+        return
+
+    def set_pfile(self, p_file):
+        with open(p_file, 'r') as pf:
+            tmp_pairs = pickle.load(pf)
+            for pair in tmp_pairs:
+                id = pair.get_id()
+                self.pairs[id] = pair #to hash
+
+    def baseline(self, id_bo):
+        self.baseline_predicates = []
+        lin = Lin()
+        tools = RTETools()
+        if id_bo in self.pairs:
+            value = self.pairs[id_bo].get_value()
+            lemmas_text = self.pairs[id_bo].get_feature_text('lemmas')
+            tools.set_tokens(lemmas_text)
+            lemmas_text = tools.quit_sw()
+            lemmas_text = tools.quit_punct()
+            lemmas_hypo = self.pairs[id_bo].get_feature_hypo('lemmas')
+            tools.set_tokens(lemmas_hypo)
+            lemmas_hypo = tools.quit_sw()
+            lemmas_hypo = tools.quit_punct()
+            for lemma_t in lemmas_text:
+                for lemma_h in lemmas_hypo:
+                    combo1 = 'Combo(%s, "%s|||%s")'%(id_bo, self.clean_str(lemma_t), self.clean_str(lemma_h))
+                    sim_t = lin.n_similar_words(lemma_t, 10)
+                    sim_h = lin.n_similar_words(lemma_h, 10)
+                    tmp_score_t = []
+                    for w,s in sim_t:
+                        tmp_score_t.append(w)
+                    tmp_score_h = []
+                    for w,s in sim_h:
+                        tmp_score_h.append(w)
+
+                    vector = SetMetrics(tmp_score_t, tmp_score_h)
+                    cos = vector.cosine()
+                    combo2 = 'ComboLin(%s, %s)'%(id_bo, cos)
+                    wordcpm = NounTools(lemma_t, lemma_h)
+                    direct = wordcpm.direct()
+                    combo3 = 'Direct(%s, %s)'%(id_bo, direct)
+                    self.baseline_predicates.append(combo1)
+                    #self.baseline_predicates.append(combo2)
+                    self.baseline_predicates.append(combo3)
+                    
+        return self.baseline_predicates
 class ModelD(MLNModel):
     
     def __init__(self, v_predicates = [], a_predicates = []):
