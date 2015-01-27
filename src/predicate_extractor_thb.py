@@ -4,6 +4,8 @@ import xml.etree.ElementTree as ET
 from optparse import OptionParser
 import pickle
 from thb_models import *
+import importlib
+
 def main():
     parser = OptionParser(usage="usage: %prog [options]", version="%prog 1.0")
     parser.add_option("-x", "--xml-file", action="store", dest="xml_file"
@@ -78,13 +80,27 @@ def load_xml(xml_file):
                     points[id]['verbs'] = verbs
     return points
 
+def load_class(full_class_string):
+    """
+    dynamically load a class from a string
+    the user can develop new models in  by extending the base class
+    """
+    class_data = full_class_string.split(".")
+    module_path = ".".join(class_data[:-1])
+    class_str = class_data[-1]
+    module = importlib.import_module(module_path)
+    # Finally, we retrieve the Class
+    return getattr(module, class_str)
+
 def extract_predicates(points, a_file, model_name, p_file):
     with open(a_file, 'w') as o:
         gs = {}
         subset = {}
         true_rate = 0
         false_rate = 0
-        model = getObj(model_name)
+        #model = getObj(model_name) deprecated
+        loaded_class = load_class(model_name)
+        model = loaded_class()
         z_t = 0
         z_f = 0
         query = 'entailment'
