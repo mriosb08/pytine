@@ -1,5 +1,7 @@
 Author: Miguel Rios (miguel.riosgaona@leeds.ac.uk)
+
 Realease version: 1.0
+
 Requierements: python 2.7, alchemy 2.0 (http://alchemy.cs.washington.edu/), thebeast (https://code.google.com/p/thebeast/), senna parser (http://ml.nec-labs.com/senna/)
 
 This repo contains the sripts that implement Recognising Textual Entialment with Statistical Relational Learning.
