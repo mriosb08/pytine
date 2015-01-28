@@ -1,4 +1,4 @@
-Author: Miguel Rios (miguel.riosgaona@leeds.ac.uk)
+Author: Miguel Rios (m.riosgaona@leeds.ac.uk)
 
 Realease version: 1.0
 
