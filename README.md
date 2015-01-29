@@ -2,7 +2,7 @@ Author: Miguel Rios (m.riosgaona@leeds.ac.uk)
 
 Realease version: 1.0
 
-Requierements: python 2.7, alchemy 2.0 (http://alchemy.cs.washington.edu/), thebeast (https://code.google.com/p/thebeast/), senna parser (http://ml.nec-labs.com/senna/)
+Requirements: python 2.7, alchemy 2.0 (http://alchemy.cs.washington.edu/), thebeast (https://code.google.com/p/thebeast/), senna parser (http://ml.nec-labs.com/senna/)
 
 This repo contains the sripts that implement: 
 
